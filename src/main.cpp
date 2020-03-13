@@ -91,6 +91,13 @@ int main(int argc, char** argv)
           std::cout << values(i);
         }
       }
+      for (std::size_t i {0}; i <static_cast<std::size_t>(center_asis.size()); ++i) {
+        std::cout << ',' << center_asis(i);
+      }
+      const auto rotation_coeffs {w2l_rotation.coeffs()};
+      for (std::size_t i {0}; i <static_cast<std::size_t>(rotation_coeffs.size()); ++i) {
+        std::cout << ',' << rotation_coeffs(i);
+      }
       std::cout.put('\n');
     }
   } catch (boost::wrapexcept<boost::property_tree::ptree_bad_path>& e) {
