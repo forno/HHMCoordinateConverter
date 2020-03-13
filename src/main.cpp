@@ -113,10 +113,11 @@ int main(int argc, char** argv)
           std::cout << values(i);
         }
       }
-      for (std::size_t i {0}; i <static_cast<std::size_t>(center_asis.size()); ++i) {
-        std::cout << ',' << center_asis(i);
+      const auto l2w_translation {-center_asis};
+      for (std::size_t i {0}; i < static_cast<std::size_t>(l2w_translation.size()); ++i) {
+        std::cout << ',' << l2w_translation(i);
       }
-      const auto l2w_rotation = w2l_rotation.inverse();
+      const auto l2w_rotation {w2l_rotation.inverse()};
       const auto& l2w_coeffs {l2w_rotation.coeffs()};
       for (std::size_t i {0}; i < static_cast<std::size_t>(l2w_coeffs.size()); ++i) {
         std::cout << ',' << l2w_coeffs(i);
