@@ -69,6 +69,7 @@ int main(int argc, char** argv)
       }
 
       const Eigen::Vector3f l2r_direction = (values.row(indexies.right_asis) - values.row(indexies.left_asis)).normalized();
+      const Eigen::Vector3f forward = -values.row(indexies.v_sacral);
       std::cout << values;
     }
   } catch (boost::wrapexcept<boost::property_tree::ptree_bad_path>& e) {
