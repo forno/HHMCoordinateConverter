@@ -50,14 +50,14 @@ int main(int argc, char** argv)
     }
     for (std::string line; std::getline(std::cin, line);) {
       boost::tokenizer<boost::escaped_list_separator<char>> tokens(line);
-      Eigen::Matrix<float, marker_count, 3> values;
+      Eigen::Matrix<float, marker_count, 3, Eigen::RowMajor> values;
       {
         auto it = tokens.begin();
         for (std::size_t i {0}; i < marker_count * 3; ++i) {
           try {
-            values(i / 3, i % 3) = std::stof(*it);
+            values(i) = std::stof(*it);
           } catch (std::invalid_argument&) {
-            values(i / 3, i % 3) = std::nan("");
+            values(i) = std::nan("");
           }
           ++it;
         }
