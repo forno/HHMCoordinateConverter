@@ -50,7 +50,8 @@ int main(int argc, char** argv)
   }
 
   try {
-    const auto indexies {read_indexies(vm["config"].as<std::string>())};
+    const auto config_path = vm["config"].as<std::string>();
+    const auto indexies {read_indexies(config_path)};
     if (vm["header"].as<bool>()) {
       std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
