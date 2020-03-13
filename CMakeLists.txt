@@ -5,7 +5,8 @@ set(CMAKE_CXX_STANDARD          20  CACHE STRING "CXX standard version")
 set(CMAKE_CXX_STANDARD_REQUIRED ON  CACHE BOOL   "version required")
 set(CMAKE_CXX_EXTENSIONS        OFF CACHE BOOL   "compiler extension")
 
-find_package(Eigen3  REQUIRED)
+find_package(Boost  REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 set(Clang_WARN_OPTIONS
   -Weverything
