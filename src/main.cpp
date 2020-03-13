@@ -1,10 +1,13 @@
+#include <cmath>
 #include <cstddef>
 #include <filesystem>
 #include <iostream>
+#include <limits>
 
 #include <boost/optional.hpp>
-#include <boost/property_tree/ptree.hpp>
+#include <boost/program_options.hpp>
 #include <boost/property_tree/ini_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 #include <boost/tokenizer.hpp>
 
 #include <Eigen/Dense>
@@ -22,27 +25,49 @@ index_holder read_indexies(std::filesystem::path path);
 
 int main(int argc, char** argv)
 {
-  if (argc < 2) {
+  namespace po = boost::program_options;
+
+  po::options_description description("Options");
+  description.add_options()
+    ("header,h", po::value<bool>()->default_value(true), "Dose the CSV has header?")
+    ("config,c", po::value<std::string>(), "Config file path")
+    ("help,H", "Help")
+    ;
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, description), vm);
+  po::notify(vm);
+
+  if (argc < 2 || vm.count("help")) {
     std::cerr << "Usage: " << *argv << " IndexiesFilePath\n";
     return 1;
   }
 
   try {
-    const auto indexies {read_indexies(argv[1])};
+    const auto indexies {read_indexies(vm["config"].as<std::string>())};
+    if (vm["header"].as<bool>()) {
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
     for (std::string line; std::getline(std::cin, line);) {
       boost::tokenizer<boost::escaped_list_separator<char>> tokens(line);
       Eigen::Matrix<float, marker_count, 3> values;
-      std::size_t current_index {0};
-      for (auto v : tokens) {
-        values(current_index / 3, current_index % 3) = std::stof(v);
-        ++current_index;
+      {
+        auto it = tokens.begin();
+        for (std::size_t i {0}; i < marker_count * 3; ++i) {
+          try {
+            values(i / 3, i % 3) = std::stof(*it);
+          } catch (std::invalid_argument&) {
+            values(i / 3, i % 3) = std::nan("");
+          }
+          ++it;
+        }
       }
       std::cout << values;
     }
-  } catch(boost::wrapexcept<boost::property_tree::ptree_bad_path>& e) {
+  } catch (boost::wrapexcept<boost::property_tree::ptree_bad_path>& e) {
     std::cerr << "Invalid indexies format: " << e.what() << '\n';
     return 1;
-  } catch(boost::wrapexcept<boost::property_tree::ini_parser::ini_parser_error>& e) {
+  } catch (boost::wrapexcept<boost::property_tree::ini_parser::ini_parser_error>& e) {
     std::cerr << "Invalid indexies file: " << e.what() << '\n';
     return 1;
   }

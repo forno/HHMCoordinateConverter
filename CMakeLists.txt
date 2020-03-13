@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD          20  CACHE STRING "CXX standard version")
 set(CMAKE_CXX_STANDARD_REQUIRED ON  CACHE BOOL   "version required")
 set(CMAKE_CXX_EXTENSIONS        OFF CACHE BOOL   "compiler extension")
 
-find_package(Boost  REQUIRED)
+find_package(Boost  REQUIRED COMPONENTS program_options REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 set(Clang_WARN_OPTIONS
@@ -63,7 +63,7 @@ add_compile_options(
 )
 
 add_executable(converter src/main.cpp)
-target_link_libraries(converter Eigen3::Eigen)
+target_link_libraries(converter Eigen3::Eigen Boost::headers Boost::program_options)
 
 add_custom_target(run
   COMMAND converter < ${CMAKE_SOURCE_DIR}/input
