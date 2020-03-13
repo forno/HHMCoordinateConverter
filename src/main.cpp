@@ -39,7 +39,7 @@ int main(int argc, char** argv)
   po::notify(vm);
 
   if (argc < 2 || vm.count("help")) {
-    std::cerr << "Usage: " << *argv << " IndexiesFilePath\n";
+    std::cerr << "Usage: " << *argv << " --config config/Cooking < cooking.csv\n";
     return 1;
   }
 
