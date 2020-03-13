@@ -11,6 +11,7 @@
 #include <boost/tokenizer.hpp>
 
 #include <Eigen/Dense>
+#include <Eigen/Geometry>
 
 constexpr std::size_t marker_count {29};
 
@@ -68,8 +69,12 @@ int main(int argc, char** argv)
         values.row(i) -= center_asis;
       }
 
-      const Eigen::Vector3f l2r_direction = (values.row(indexies.right_asis) - values.row(indexies.left_asis)).normalized();
       const Eigen::Vector3f forward = -values.row(indexies.v_sacral);
+      const auto w2l_rotation = Eigen::Quaternionf::FromTwoVectors(forward, Eigen::Vector3f{0, 0, 1.f});
+
+      for (std::size_t i {0}; i < marker_count; ++i) {
+        values.row(i) = w2l_rotation * values.row(i);
+      }
       std::cout << values;
     }
   } catch (boost::wrapexcept<boost::property_tree::ptree_bad_path>& e) {
