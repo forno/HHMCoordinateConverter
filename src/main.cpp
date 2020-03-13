@@ -16,9 +16,9 @@ constexpr std::size_t marker_count {29};
 
 struct index_holder
 {
-  std::size_t lasis;
-  std::size_t rasis;
-  std::size_t vsacral;
+  std::size_t left_asis;
+  std::size_t right_asis;
+  std::size_t v_sacral;
 };
 
 index_holder read_indexies(std::filesystem::path path);
@@ -62,6 +62,7 @@ int main(int argc, char** argv)
           ++it;
         }
       }
+      const auto center_asis = values(indexies.left_asis) / 2 + values(indexies.right_asis) / 2;
       std::cout << values;
     }
   } catch (boost::wrapexcept<boost::property_tree::ptree_bad_path>& e) {
