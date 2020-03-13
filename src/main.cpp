@@ -55,5 +55,5 @@ index_holder read_indexies(std::filesystem::path path)
   using namespace boost::property_tree;
   ptree pt;
   read_ini(path.native(), pt);
-  return index_holder {pt.get<std::size_t>("Indexies.lasis"), pt.get<std::size_t>("Indexies.rasis"), pt.get<std::size_t>("Indexies.vsacral")};
+  return index_holder {pt.get<std::size_t>("Indexies.LeftAsis"), pt.get<std::size_t>("Indexies.RightAsis"), pt.get<std::size_t>("Indexies.VSacral")};
 }
