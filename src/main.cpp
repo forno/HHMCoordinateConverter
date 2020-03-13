@@ -62,8 +62,13 @@ int main(int argc, char** argv)
           ++it;
         }
       }
+
       const Eigen::Vector3f center_asis = values.row(indexies.left_asis) / 2 + values.row(indexies.right_asis) / 2;
-      const Eigen::Vector3f l2r_vector = values.row(indexies.right_asis) - values.row(indexies.left_asis);
+      for (std::size_t i {0}; i < marker_count; ++i) {
+        values.row(i) -= center_asis;
+      }
+
+      const Eigen::Vector3f l2r_direction = (values.row(indexies.right_asis) - values.row(indexies.left_asis)).normalized();
       std::cout << values;
     }
   } catch (boost::wrapexcept<boost::property_tree::ptree_bad_path>& e) {
