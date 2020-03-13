@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <iostream>
 #include <limits>
+#include <utility>
 
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
@@ -26,6 +27,10 @@ index_holder read_indexies(std::filesystem::path path);
 
 int main(int argc, char** argv)
 {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+  std::cout << std::fixed;
+
   namespace po = boost::program_options;
 
   po::options_description description("Options");
@@ -58,7 +63,7 @@ int main(int argc, char** argv)
           try {
             values(i) = std::stof(*it);
           } catch (std::invalid_argument&) {
-            values(i) = std::nan("");
+            values(i) = std::numeric_limits<float>::quiet_NaN();
           }
           ++it;
         }
@@ -75,7 +80,17 @@ int main(int argc, char** argv)
       for (std::size_t i {0}; i < marker_count; ++i) {
         values.row(i) = w2l_rotation * values.row(i);
       }
-      std::cout << values;
+
+      auto is_first {true};
+      for (std::size_t i {0}; i < static_cast<std::size_t>(values.size()); ++i) {
+        if (!std::exchange(is_first, false)) {
+          std::cout.put(',');
+        }
+        if (!isnan(values(i))) {
+          std::cout << values(i);
+        }
+      }
+      std::cout.put('\n');
     }
   } catch (boost::wrapexcept<boost::property_tree::ptree_bad_path>& e) {
     std::cerr << "Invalid indexies format: " << e.what() << '\n';
