@@ -26,6 +26,7 @@ SOFTWARE.
 #include <iostream>
 #include <limits>
 #include <utility>
+#include <fstream>
 
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
@@ -52,6 +53,9 @@ int main(int argc, char** argv)
   std::ios::sync_with_stdio(false);
   std::cin.tie(nullptr);
   std::cout << std::fixed;
+  std::string filename = "converted/1_162.csv";
+  std::ofstream writing_file;
+  writing_file.open(filename, std::ios::out);
 
   namespace po = boost::program_options;
 
@@ -107,20 +111,20 @@ int main(int argc, char** argv)
       auto is_first {true};
       for (std::size_t i {0}; i < static_cast<std::size_t>(values.size()); ++i) {
         if (!std::exchange(is_first, false)) {
-          std::cout.put(',');
+          writing_file.put(',');
         }
         if (!isnan(values(i))) {
-          std::cout << values(i);
+          writing_file << values(i);
         }
       }
       for (std::size_t i {0}; i <static_cast<std::size_t>(center_asis.size()); ++i) {
-        std::cout << ',' << center_asis(i);
+        writing_file << ',' << center_asis(i);
       }
       const auto rotation_coeffs {w2l_rotation.inverse().coeffs()};
       for (std::size_t i {0}; i <static_cast<std::size_t>(rotation_coeffs.size()); ++i) {
-        std::cout << ',' << rotation_coeffs(i);
+        writing_file << ',' << rotation_coeffs(i);
       }
-      std::cout.put('\n');
+      writing_file.put('\n');
     }
   } catch (boost::wrapexcept<boost::property_tree::ptree_bad_path>& e) {
     std::cerr << "Invalid indexies format: " << e.what() << '\n';
