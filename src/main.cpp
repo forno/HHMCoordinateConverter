@@ -60,7 +60,7 @@ int main(int argc, char** argv)
     ("header,h", po::value<bool>()->default_value(true), "Dose the CSV has header?")
     ("config,c", po::value<std::string>(), "Config file path")
     ("l2w,l", po::value<bool>()->default_value(false), "Local to World flag")
-    ("zup,z", po::value<bool>()->default_value(false), "Z up rotation")
+    ("zup,z", po::value<bool>()->default_value(false), "Z up coordinate")
     ("help,H", "Help")
     ;
 
