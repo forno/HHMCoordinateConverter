@@ -62,7 +62,6 @@ int main(int argc, char **argv)
     ("header,h", po::value<bool>()->default_value(true), "Dose the CSV has header?")
     ("config,c", po::value<std::string>(), "Config file path")
     ("l2w,l", po::value<bool>()->default_value(false), "Local to World flag")
-    ("zup,z", po::value<bool>()->default_value(false), "Z up coordinate")
     ("help,H", "Help")
     ;
 
@@ -144,7 +143,8 @@ void convert4w2l(const index_holder indexies&)
     }
 
     const Eigen::Vector3f forward = -values.row(indexies.v_sacral);
-    const auto w2l_rotation = Eigen::Quaternionf::FromTwoVectors(forward, vm["zup"].as<bool>() ? Eigen::Vector3f::UnitY() : Eigen::Vector3f::UnitZ());
+    const Eigen::Vector3f forward_on_ground{forward(0), forward(1), 0};
+    const auto w2l_rotation = Eigen::Quaternionf::FromTwoVectors(forward_on_ground, Eigen::Vector3f::UnitY());
 
     for (std::size_t i{0}; i < marker_count; ++i)
     {
