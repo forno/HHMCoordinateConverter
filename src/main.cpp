@@ -58,7 +58,13 @@ int main(int argc, char **argv)
   namespace po = boost::program_options;
 
   po::options_description description("Options");
-  description.add_options()("header,h", po::value<bool>()->default_value(true), "Dose the CSV has header?")("config,c", po::value<std::string>(), "Config file path")("l2w,l", po::value<bool>()->default_value(false), "Local to World flag")("zup,z", po::value<bool>()->default_value(false), "Z up coordinate")("help,H", "Help");
+  description.add_options()
+    ("header,h", po::value<bool>()->default_value(true), "Dose the CSV has header?")
+    ("config,c", po::value<std::string>(), "Config file path")
+    ("l2w,l", po::value<bool>()->default_value(false), "Local to World flag")
+    ("zup,z", po::value<bool>()->default_value(false), "Z up coordinate")
+    ("help,H", "Help")
+    ;
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, description), vm);
@@ -66,7 +72,7 @@ int main(int argc, char **argv)
 
   if (argc < 2 || vm.count("help"))
   {
-    std::cerr << "Usage: " << *argv << " --config config/Cooking < cooking.csv\n";
+    std::cerr << "Usage: " << *argv << " --config config/Cooking [options] < cooking.csv\n";
     return 1;
   }
 
