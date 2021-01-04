@@ -47,7 +47,7 @@ struct index_holder
 
 index_holder read_indexies(std::filesystem::path path);
 void convert4w2l(const index_holder&);
-void convert4l2w(const index_holder&);
+void convert4l2w();
 
 int main(int argc, char **argv)
 {
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
     }
     else
     {
-      convert4l2w(indexies);
+      convert4l2w();
     }
   }
   catch (boost::wrapexcept<boost::property_tree::ptree_bad_path> &e)
@@ -179,7 +179,7 @@ void convert4w2l(const index_holder& indexies)
   }
 }
 
-void convert4l2w(const index_holder& indexies)
+void convert4l2w()
 {
   for (std::string line; std::getline(std::cin, line);)
   {
