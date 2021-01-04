@@ -114,7 +114,7 @@ index_holder read_indexies(std::filesystem::path path)
   return index_holder{pt.get<std::size_t>("Indexies.LeftAsis"), pt.get<std::size_t>("Indexies.RightAsis"), pt.get<std::size_t>("Indexies.VSacral")};
 }
 
-void convert4w2l(const index_holder indexies&)
+void convert4w2l(const index_holder& indexies)
 {
   for (std::string line; std::getline(std::cin, line);)
   {
@@ -178,7 +178,7 @@ void convert4w2l(const index_holder indexies&)
   }
 }
 
-void convert4l2w(const index_holder indexies&)
+void convert4l2w(const index_holder& indexies)
 {
   for (std::string line; std::getline(std::cin, line);)
   {
