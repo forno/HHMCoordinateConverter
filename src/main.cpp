@@ -101,13 +101,10 @@ int main(int argc, char** argv)
         }
 
         const Eigen::Vector3f forward = -values.row(indexies.v_sacral);
-        const auto w2l_rotation = Eigen::Quaternionf::FromTwoVectors(forward, Eigen::Vector3f{0, 0, 1.f});
-        const auto y2z_up_rotation = vm["zup"].as<bool>() ?
-          Eigen::Quaternionf::FromTwoVectors(Eigen::Vector3f{0,1.f,0}, Eigen::Vector3f{0, 0, 1.f});
-          Eigen::Quaternionf::Identity();
+        const auto w2l_rotation = Eigen::Quaternionf::FromTwoVectors(forward, vm["zup"].as<bool>() ? Eigen::Vector3f::UnitY() : Eigen::Vector3f::UnitZ());
 
         for (std::size_t i {0}; i < marker_count; ++i) {
-          values.row(i) = y2z_up_rotation *  w2l_rotation * values.row(i);
+          values.row(i) = w2l_rotation * values.row(i);
         }
 
         auto is_first {true};
