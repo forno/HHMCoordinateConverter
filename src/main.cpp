@@ -46,8 +46,8 @@ struct index_holder
 };
 
 index_holder read_indexies(std::filesystem::path path);
-void convert4w2l();
-void convert4l2w();
+void convert4w2l(const index_holder&);
+void convert4l2w(const index_holder&);
 
 int main(int argc, char **argv)
 {
@@ -86,11 +86,11 @@ int main(int argc, char **argv)
     }
     if (!vm["l2w"].as<bool>())
     {
-      convert4w2l();
+      convert4w2l(indexies);
     }
     else
     {
-      convert4l2w();
+      convert4l2w(indexies);
     }
   }
   catch (boost::wrapexcept<boost::property_tree::ptree_bad_path> &e)
@@ -115,7 +115,7 @@ index_holder read_indexies(std::filesystem::path path)
   return index_holder{pt.get<std::size_t>("Indexies.LeftAsis"), pt.get<std::size_t>("Indexies.RightAsis"), pt.get<std::size_t>("Indexies.VSacral")};
 }
 
-void convert4w2l()
+void convert4w2l(const index_holder indexies&)
 {
   for (std::string line; std::getline(std::cin, line);)
   {
@@ -144,14 +144,11 @@ void convert4w2l()
     }
 
     const Eigen::Vector3f forward = -values.row(indexies.v_sacral);
-    const auto w2l_rotation = Eigen::Quaternionf::FromTwoVectors(forward, vm["zup"].as<bool>() ? Eigen::Vector3f::UnitY() : Eigen::Vector3f::UnitZ());
-    const auto coordinate_up_direction = vm["zup"].as<bool>() ? Eigen::Vector3f::UnitZ() : Eigen::Vector3f::UnitY();
-    const auto wrong_up_direction = w2l_rotation * coordinate_up_direction;
-    const auto up_fix_rotation = Eigen::Quaternionf::FromTwoVectors(wrong_up_direction, coordinate_up_direction);
+    //const auto w2l_rotation = Eigen::Quaternionf::FromTwoVectors(forward, vm["zup"].as<bool>() ? Eigen::Vector3f::UnitY() : Eigen::Vector3f::UnitZ());
 
     for (std::size_t i{0}; i < marker_count; ++i)
     {
-      values.row(i) = up_fix_rotation * w2l_rotation * values.row(i);
+      values.row(i) = w2l_rotation * values.row(i);
     }
 
     auto is_first{true};
@@ -181,7 +178,7 @@ void convert4w2l()
   }
 }
 
-void convert4l2w()
+void convert4l2w(const index_holder indexies&)
 {
   for (std::string line; std::getline(std::cin, line);)
   {
