@@ -144,7 +144,7 @@ void convert4w2l(const index_holder indexies&)
     }
 
     const Eigen::Vector3f forward = -values.row(indexies.v_sacral);
-    //const auto w2l_rotation = Eigen::Quaternionf::FromTwoVectors(forward, vm["zup"].as<bool>() ? Eigen::Vector3f::UnitY() : Eigen::Vector3f::UnitZ());
+    const auto w2l_rotation = Eigen::Quaternionf::FromTwoVectors(forward, vm["zup"].as<bool>() ? Eigen::Vector3f::UnitY() : Eigen::Vector3f::UnitZ());
 
     for (std::size_t i{0}; i < marker_count; ++i)
     {
