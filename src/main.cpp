@@ -46,6 +46,8 @@ struct index_holder
 };
 
 index_holder read_indexies(std::filesystem::path path);
+void convert4w2l();
+void convert4l2w();
 
 int main(int argc, char **argv)
 {
@@ -78,136 +80,11 @@ int main(int argc, char **argv)
     }
     if (!vm["l2w"].as<bool>())
     {
-      for (std::string line; std::getline(std::cin, line);)
-      {
-        boost::tokenizer<boost::escaped_list_separator<char>> tokens(line);
-        Eigen::Matrix<float, marker_count, 3, Eigen::RowMajor> values;
-        {
-          auto it = tokens.begin();
-          for (std::size_t i{0}; i < marker_count * 3; ++i)
-          {
-            try
-            {
-              values(i) = std::stof(*it);
-            }
-            catch (std::invalid_argument &)
-            {
-              values(i) = std::numeric_limits<float>::quiet_NaN();
-            }
-            ++it;
-          }
-        }
-
-        const Eigen::Vector3f center_asis = values.row(indexies.left_asis) / 2 + values.row(indexies.right_asis) / 2;
-        for (std::size_t i{0}; i < marker_count; ++i)
-        {
-          values.row(i) -= center_asis;
-        }
-
-        const Eigen::Vector3f forward = -values.row(indexies.v_sacral);
-        const auto w2l_rotation = Eigen::Quaternionf::FromTwoVectors(forward, vm["zup"].as<bool>() ? Eigen::Vector3f::UnitY() : Eigen::Vector3f::UnitZ());
-        const auto coordinate_up_direction = vm["zup"].as<bool>() ? Eigen::Vector3f::UnitZ() : Eigen::Vector3f::UnitY();
-        const auto wrong_up_direction = w2l_rotation * coordinate_up_direction;
-        const auto up_fix_rotation = Eigen::Quaternionf::FromTwoVectors(wrong_up_direction, coordinate_up_direction);
-
-        for (std::size_t i{0}; i < marker_count; ++i)
-        {
-          values.row(i) = up_fix_rotation * w2l_rotation * values.row(i);
-        }
-
-        auto is_first{true};
-        for (std::size_t i{0}; i < static_cast<std::size_t>(values.size()); ++i)
-        {
-          if (!std::exchange(is_first, false))
-          {
-            std::cout.put(',');
-          }
-          if (!isnan(values(i)))
-          {
-            std::cout << values(i);
-          }
-        }
-        const auto l2w_translation{-center_asis};
-        for (std::size_t i{0}; i < static_cast<std::size_t>(l2w_translation.size()); ++i)
-        {
-          std::cout << ',' << l2w_translation(i);
-        }
-        const auto l2w_rotation{w2l_rotation.inverse()};
-        const auto &l2w_coeffs{l2w_rotation.coeffs()};
-        for (std::size_t i{0}; i < static_cast<std::size_t>(l2w_coeffs.size()); ++i)
-        {
-          std::cout << ',' << l2w_coeffs(i);
-        }
-        std::cout.put('\n');
-      }
+      convert4w2l();
     }
     else
     {
-      for (std::string line; std::getline(std::cin, line);)
-      {
-        Eigen::Matrix<float, marker_count, 3, Eigen::RowMajor> values;
-        Eigen::Vector3f translation;
-        Eigen::Quaternionf rotation;
-        {
-          boost::tokenizer<boost::escaped_list_separator<char>> tokens(line);
-          auto it = tokens.begin();
-          for (std::size_t i{0}; i < static_cast<std::size_t>(values.size()); ++i)
-          {
-            try
-            {
-              values(i) = std::stof(*it);
-            }
-            catch (std::invalid_argument &)
-            {
-              values(i) = std::numeric_limits<float>::quiet_NaN();
-            }
-            ++it;
-          }
-          for (std::size_t i{0}; i < static_cast<std::size_t>(translation.size()); ++i)
-          {
-            try
-            {
-              translation(i) = std::stof(*it);
-            }
-            catch (std::invalid_argument &)
-            {
-              translation(i) = std::numeric_limits<float>::quiet_NaN();
-            }
-            ++it;
-          }
-          Eigen::Vector4f rotation_coeffs;
-          for (std::size_t i{0}; i < static_cast<std::size_t>(rotation_coeffs.size()); ++i)
-          {
-            try
-            {
-              rotation_coeffs(i) = std::stof(*it);
-            }
-            catch (std::invalid_argument &)
-            {
-              rotation_coeffs(i) = std::numeric_limits<float>::quiet_NaN();
-            }
-            ++it;
-          }
-          rotation = Eigen::Quaternionf(rotation_coeffs);
-        }
-        for (std::size_t i{0}; i < marker_count; ++i)
-        {
-          values.row(i) = rotation * values.row(i) + translation;
-        }
-        auto is_first{true};
-        for (std::size_t i{0}; i < static_cast<std::size_t>(values.size()); ++i)
-        {
-          if (!std::exchange(is_first, false))
-          {
-            std::cout.put(',');
-          }
-          if (!isnan(values(i)))
-          {
-            std::cout << values(i);
-          }
-        }
-        std::cout.put('\n');
-      }
+      convert4l2w();
     }
   }
   catch (boost::wrapexcept<boost::property_tree::ptree_bad_path> &e)
@@ -230,4 +107,139 @@ index_holder read_indexies(std::filesystem::path path)
   ptree pt;
   read_ini(path.native(), pt);
   return index_holder{pt.get<std::size_t>("Indexies.LeftAsis"), pt.get<std::size_t>("Indexies.RightAsis"), pt.get<std::size_t>("Indexies.VSacral")};
+}
+
+void convert4w2l()
+{
+  for (std::string line; std::getline(std::cin, line);)
+  {
+    boost::tokenizer<boost::escaped_list_separator<char>> tokens(line);
+    Eigen::Matrix<float, marker_count, 3, Eigen::RowMajor> values;
+    {
+      auto it = tokens.begin();
+      for (std::size_t i{0}; i < marker_count * 3; ++i)
+      {
+        try
+        {
+          values(i) = std::stof(*it);
+        }
+        catch (std::invalid_argument &)
+        {
+          values(i) = std::numeric_limits<float>::quiet_NaN();
+        }
+        ++it;
+      }
+    }
+
+    const Eigen::Vector3f center_asis = values.row(indexies.left_asis) / 2 + values.row(indexies.right_asis) / 2;
+    for (std::size_t i{0}; i < marker_count; ++i)
+    {
+      values.row(i) -= center_asis;
+    }
+
+    const Eigen::Vector3f forward = -values.row(indexies.v_sacral);
+    const auto w2l_rotation = Eigen::Quaternionf::FromTwoVectors(forward, vm["zup"].as<bool>() ? Eigen::Vector3f::UnitY() : Eigen::Vector3f::UnitZ());
+    const auto coordinate_up_direction = vm["zup"].as<bool>() ? Eigen::Vector3f::UnitZ() : Eigen::Vector3f::UnitY();
+    const auto wrong_up_direction = w2l_rotation * coordinate_up_direction;
+    const auto up_fix_rotation = Eigen::Quaternionf::FromTwoVectors(wrong_up_direction, coordinate_up_direction);
+
+    for (std::size_t i{0}; i < marker_count; ++i)
+    {
+      values.row(i) = up_fix_rotation * w2l_rotation * values.row(i);
+    }
+
+    auto is_first{true};
+    for (std::size_t i{0}; i < static_cast<std::size_t>(values.size()); ++i)
+    {
+      if (!std::exchange(is_first, false))
+      {
+        std::cout.put(',');
+      }
+      if (!isnan(values(i)))
+      {
+        std::cout << values(i);
+      }
+    }
+    const auto l2w_translation{-center_asis};
+    for (std::size_t i{0}; i < static_cast<std::size_t>(l2w_translation.size()); ++i)
+    {
+      std::cout << ',' << l2w_translation(i);
+    }
+    const auto l2w_rotation{w2l_rotation.inverse()};
+    const auto &l2w_coeffs{l2w_rotation.coeffs()};
+    for (std::size_t i{0}; i < static_cast<std::size_t>(l2w_coeffs.size()); ++i)
+    {
+      std::cout << ',' << l2w_coeffs(i);
+    }
+    std::cout.put('\n');
+  }
+}
+
+void convert4l2w()
+{
+  for (std::string line; std::getline(std::cin, line);)
+  {
+    Eigen::Matrix<float, marker_count, 3, Eigen::RowMajor> values;
+    Eigen::Vector3f translation;
+    Eigen::Quaternionf rotation;
+    {
+      boost::tokenizer<boost::escaped_list_separator<char>> tokens(line);
+      auto it = tokens.begin();
+      for (std::size_t i{0}; i < static_cast<std::size_t>(values.size()); ++i)
+      {
+        try
+        {
+          values(i) = std::stof(*it);
+        }
+        catch (std::invalid_argument &)
+        {
+          values(i) = std::numeric_limits<float>::quiet_NaN();
+        }
+        ++it;
+      }
+      for (std::size_t i{0}; i < static_cast<std::size_t>(translation.size()); ++i)
+      {
+        try
+        {
+          translation(i) = std::stof(*it);
+        }
+        catch (std::invalid_argument &)
+        {
+          translation(i) = std::numeric_limits<float>::quiet_NaN();
+        }
+        ++it;
+      }
+      Eigen::Vector4f rotation_coeffs;
+      for (std::size_t i{0}; i < static_cast<std::size_t>(rotation_coeffs.size()); ++i)
+      {
+        try
+        {
+          rotation_coeffs(i) = std::stof(*it);
+        }
+        catch (std::invalid_argument &)
+        {
+          rotation_coeffs(i) = std::numeric_limits<float>::quiet_NaN();
+        }
+        ++it;
+      }
+      rotation = Eigen::Quaternionf(rotation_coeffs);
+    }
+    for (std::size_t i{0}; i < marker_count; ++i)
+    {
+      values.row(i) = rotation * values.row(i) + translation;
+    }
+    auto is_first{true};
+    for (std::size_t i{0}; i < static_cast<std::size_t>(values.size()); ++i)
+    {
+      if (!std::exchange(is_first, false))
+      {
+        std::cout.put(',');
+      }
+      if (!isnan(values(i)))
+      {
+        std::cout << values(i);
+      }
+    }
+    std::cout.put('\n');
+  }
 }
