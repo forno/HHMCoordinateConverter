@@ -143,8 +143,9 @@ void convert4w2l(const index_holder& indexies)
     }
 
     const Eigen::Vector3f forward = -values.row(indexies.v_sacral);
-    const Eigen::Vector3f forward_on_ground{forward(0), forward(1), 0};
-    const auto w2l_rotation = Eigen::Quaternionf::FromTwoVectors(forward_on_ground, Eigen::Vector3f::UnitY());
+    const Eigen::Vector2f forward_on_ground{forward(0), forward(1)};
+    const float angle_on_ground {std::acos(forward_on_ground.dot(Eigen::Vector2f::UnitY()))};
+    const Eigen::Quaternionf w2l_rotation(Eigen::AngleAxisf(angle_on_ground, Eigen::Vector3f::UnitZ()));
 
     for (std::size_t i{0}; i < marker_count; ++i)
     {
